@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block content %}
+</br>
+<TABLE width="100%" class="tableau" align="center">
+  <TR>
+    <TD class="sond1">
+          <h2>{% block title %}Identifiants oubliés{% endblock %}</h2>
+    </TD>
+  </TR>
+
+ <TR>
+   <TD>
+     <TABLE width= "100%" class="sond_indiv">
+       <TR>
+         <TD class ="case">
+          <form method="post">
+            <label for="mail"><span style="padding: 1rem;">Entrez votre adresse mail</span></label>
+            </br> <input type="text" name="mail" id="mail" required>
+            </br></br>
+            <span style="float: right; text-align: right; padding: 0 0.5rem;">
+              <input type="submit" value="Ajouter">
+            </span>
+          </form>
+        </TD>
+      </TR>
+    </TABLE>
+  </TD>
+</TR>
+</TABLE>
+
+<span style="float: right; text-align: right; padding: 2rem 2rem;">
+    <a href="{{ url_for('auth.login') }}">Retour</a>
+</span>
+
+{% endblock %}

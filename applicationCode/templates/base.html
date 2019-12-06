@@ -1,0 +1,27 @@
+<!doctype html>
+
+<title>{% block title %}SyncPlanCal{% endblock %}</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<nav>
+  <h1>SyncPlanCal</h1>
+  <ul>
+    {% if g.user %}
+      <li><span>{{ g.user['username'] }} </span>
+      <li><a href="{{ url_for('page_principale.parametres') }}">Paramètres du compte</a>
+      <li><a href="{{ url_for('auth.logout') }}">Se déconnecter</a>
+    {% else %}
+      <li><a href="{{ url_for('auth.inscription_envoi_code') }}">S'inscrire</a>
+      <li><a href="{{ url_for('auth.login') }}">Se connecter</a>
+    {% endif %}
+  </ul>
+</nav>
+<section class="content">
+  <header>
+    {% block header %}{% endblock %}
+  </header>
+  {% for message in get_flashed_messages() %}
+</br>
+    <div class="flash">{{ message }}</div>
+  {% endfor %}
+  {% block content %}{% endblock %}
+</section>

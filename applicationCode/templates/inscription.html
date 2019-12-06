@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+
+{% block content %}
+</br>
+<TABLE width="100%" class="tableau" align="center">
+  <TR>
+    <TD class="sond1">
+        <h2>Inscription</h2>
+    </TD>
+  </TR>
+  <TR>
+    <TD>
+      <TABLE width= "100%" class="sond_indiv">
+        <TR>
+          <TD class="case">
+            <form method="post">
+            <label for="username">Choisissez un nom d'utilisateur :</label>
+            </br><input class="saisie" name="username" id="username" required>
+            </br></br>
+            <label for="password">Choisissez un mot de passe :</label>
+            </br><input class="saisie" type="password" name="password" id="password" required>
+            </br></br>
+            <label for="nom_doodle">Choisissez un nom qui sera utilisé pour le remplissage des sondages :</label>
+            </br><input class="saisie" name="nom_doodle" id="nom_doodle" required>
+            </br></br>
+            <label for="mail">Donnez l'adresse mail associée à votre compte :</label>
+            </br><input class="saisie" name="mail" id="mail" required>
+            </br></br>
+
+            <input type="submit" value="S'inscrire">
+            </form>
+          </TD>
+        </TR>
+      </TABLE>
+    </TD>
+  </TR>
+  </TABLE>
+{% endblock %}

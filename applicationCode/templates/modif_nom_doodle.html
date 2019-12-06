@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block content %}
+</br>
+<TABLE width="100%" class="tableau" align="center">
+  <TR>
+    <TD class="sond1">
+          <h2>{% block title %}Modifier votre nom Doodle{% endblock %}</h2>
+    </TD>
+  </TR>
+
+ <TR>
+   <TD>
+     <TABLE width= "100%" class="sond_indiv">
+       <TR>
+         <TD class ="case">
+          <form method="post">
+            <label for="nom_doodle"><span style="padding: 1rem;">Entrez votre nouveau nom pour le remplissage des sondages Doodle </span>
+            </label>
+            </br><input type="text" name="nom_doodle" id="nom_doodle" required>
+            </br></br>
+            <input type="submit" value="Valider">
+          </form>
+        </TD>
+      </TR>
+    </TABLE>
+  </TD>
+</TR>
+</TABLE>
+
+<span style="float: right; text-align: right; padding: 2rem 2rem;">
+    <a href="{{ url_for('page_principale.parametres') }}">Retour</a>
+</span>
+
+{% endblock %}

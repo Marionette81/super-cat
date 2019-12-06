@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block content %}
+</br>
+<TABLE width="100%" class="tableau" align="center">
+  <TR>
+    <TD class="sond1">
+        <h2>PARAMÈTRES DU COMPTE</h2>
+		<TR>
+		    <TD>
+			    <TABLE width= "100%" class="sond_indiv">
+			      <TR>
+			        <TD align="left">
+			        	<h3> </h3>
+				        <h3> Nom d'utilisateur : {{username}} </h3>
+				        <span style="float: right; text-align: right;margin: 0.5rem 0 0 0 ">
+				          <a class="action" href="{{ url_for('page_principale.modif_nom_doodle', username=username, nom_doodle=nom_doodle, mail=mail) }}">Modifier nom Doodle</a>
+				        </span>
+				        <h3> Nom Doodle : {{nom_doodle}} </h3>
+				        <span style="float: right; text-align: right;margin: 0.5rem 0 0 0 ">
+				          <a class="action" href="{{ url_for('page_principale.modif_mail', username=username, nom_doodle=nom_doodle, mail=mail) }}">Modifier adresse mail</a>
+				        </span>
+				        <h3> Adresse mail : {{mail}} </h3>
+				        <span style="float: left; text-align: left; padding: 1rem 1rem;">
+				          <a class="action" href="{{ url_for('page_principale.modif_mot_de_passe', username=username, nom_doodle=nom_doodle, mail=mail) }}">Modifier mot de passe</a>
+				        </span>
+				        <h3> </h3>
+			        </TD>
+			      </TR>
+			    </TABLE>
+		  	</TD>
+		</TR>
+    </TD>
+  </TR>
+</TABLE>
+
+<span style="float: right; text-align: right; padding: 2rem 2rem;">
+    <a href="{{ url_for('page_principale') }}">Retour</a>
+</span>
+
+{% endblock %}

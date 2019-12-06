@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+
+{% block content %}
+</br>
+<TABLE width="100%" class="tableau" align="center">
+  <TR>
+    <TD class="sond1">
+        <span style="float: right; text-align: right; padding: 1rem 1rem;">
+          {% if g.user %}
+          <a class="action" href="{{ url_for('page_principale.ajouter_sondage_key') }}">Ajouter un nouveau sondage</a>
+          {% endif %}
+        </span>
+          <h2>SONDAGES EN COURS</h2>
+          {% for sondage in sondages %}
+		  <TR>
+		    <TD>
+		    {%if sondage['est_final']==1 %}<TABLE width= "100%" class="sond_final">
+		    {%else%}<TABLE width= "100%" class="sond_indiv"> {% endif %}
+		      <TR>
+		        <TD align="center">
+		          <h3>{{ sondage['titre']}}</h3>
+		          {%if sondage['est_final']==1 %}<span class="final">(DATE FINALE CHOISIE)</span></br></br> {% endif %}
+		        </TD>
+		        <TD rowspan="2" width="40%" align="center">
+		          <form action="{{ url_for('page_principale.mise_a_jour_sondage', key=sondage['key'], id=g.user['id'], nom_utilisateur=g.user['nom_doodle']) }}" method="post">
+		          	<input type="submit" value = "Mettre à jour">
+		          </form>
+		          </br>
+		          <form action="{{ url_for('page_principale.supprimer_sondage', key=sondage['key'], nom_utilisateur=g.user['nom_doodle']) }}" method="post">
+		          	<input class="danger" type="submit" value = "Supprimer" onclick="return confirm('Etes-vous sur de vouloir supprimer ce sondage?');">
+		          </form>
+		        </TD>
+		      </TR>
+		      <TR>
+		          <TD class="caracteristiques" width="80%">
+		            <span class="moyen">Détails :</span>
+		            </br>{{ sondage['description'] }}</p>
+                <span class="moyen">Calendriers :</span>
+                  {% for cal in cal_selec %}
+                    {% if cal['sondage_key']==sondage['key'] %}
+                      </br>{{ cal['calendrier_nom'] }}
+                    {% endif %}
+                  {% endfor %}
+		            <p class="evenement"><span class="petit"> Ajouté le {{ sondage['date_entree'] }} ; Dernière mise à jour : {{ sondage['date_maj'] }}</span>
+		          </TD>
+		      </TR>
+		    </TABLE>
+		    {% if not loop.last %}
+		    </br>
+		    {% endif %}
+		    </TD>
+		  </TR>
+		  {% endfor %}
+    </TD>
+  </TR>
+</TABLE>
+
+</br>
+<TABLE width="100%" class="tableau" align="center">
+  <TR>
+    <TD class="sond1">
+      <span style="float: right; text-align: right; padding: 1rem 1rem;">
+        {% if g.user %}
+        <a class="action" href="{{ url_for('page_principale.ajouter_calendrier') }}">Ajouter un nouveau calendrier</a>
+        {% endif %}
+      </span>
+      <h2>VOS CALENDRIERS</h2>
+    </TD>
+  </TR>
+  {% for calendrier in calendriers %}
+  <TR>
+    <TD>
+    <TABLE width= "100%" class="sond_indiv">
+        <TR>
+          <TD align="center">
+              <h3>{{ calendrier['calendrier_nom']}}</h3>
+          </TD>
+          <TD rowspan="2" width="40%" align="center">
+	        <form action="{{ url_for('page_principale.supprimer_calendrier', calendrier_id=calendrier['id']) }}" method="post">
+	            <input class="danger" type="submit" value = "Supprimer" onclick="return confirm('Etes-vous sur de vouloir supprimer ce sondage?');">
+	        </form>
+          </TD>
+        </TR>
+        <TR>
+            <TD class="caracteristiques" width="80%">
+              <span class="moyen">Détails :</span>
+              </br>{{ calendrier['description'] }}</p>
+            </TD>
+        </TR>
+    </TABLE>
+    {% if not loop.last %}
+    </br>
+    {% endif %}
+    </TD>
+  </TR>
+  {% endfor %}
+</TABLE>
+
+{% endblock %}

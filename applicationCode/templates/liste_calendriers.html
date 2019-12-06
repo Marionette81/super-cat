@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block content %}
+</br>
+<TABLE width="100%" class="tableau" align="center">
+  <TR>
+    <TD class="sond1">
+        <span style="float: right; text-align: right; padding: 1rem 1rem;">
+          {% if g.user %}
+          <a class="action" href="{{ url_for('page_principale.ajouter_sondage_key') }}">Ajouter un nouveau sondage</a>
+          {% endif %}
+        </span>
+          <h2>Calendriers</h2>
+		  <form action="{{ url_for('page_principale.ajouter_sondage_selec_creneaux', key=key, nom_utilisateur=nom_utilisateur) }}" method="post">
+		  <input type="submit" value="Ajouter">
+		  <h3>Choisissez les calendriers auxquels vous souhaitez ajouter les créneaux du sondage</h3>
+          {% for calendrier in liste_calendriers %}
+		  <TR>
+		    <TD>
+			<TABLE width= "100%" class="sond_indiv">
+		      <TR>
+		          <TD class="caracteristiques" width="80%">
+		            
+		            <p class="evenement"><span class="moyen">{{ calendrier['calendrier_nom'] }}</span>
+					
+					<input type="checkbox" name="{{ calendrier['id'] }}" id="check">
+		          </TD>	
+		      </TR>
+		    </TABLE>
+		    {% if not loop.last %}
+		    </br>
+		    {% endif %}
+		    </TD>
+		  </TR>
+		  {% endfor %}
+    </TD>
+		</form>
+  </TR>
+</TABLE>
+
+<span style="float: right; text-align: right; padding: 2rem 2rem;">
+    <a href="{{ url_for('page_principale') }}">Retour</a>
+</span>
+
+{% endblock %}

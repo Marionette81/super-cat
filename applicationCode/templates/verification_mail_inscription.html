@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+
+{% block content %}
+</br>
+<TABLE width="100%" class="tableau" align="center">
+  <TR>
+    <TD class="sond1">
+        <h2>Vérification de l'adresse mail</h2>
+    </TD>
+  </TR>
+  <TR>
+    <TD>
+      <TABLE width= "100%" class="sond_indiv">
+        <TR>
+          <TD class="case">
+            <form action="{{ url_for('auth.inscription_finalisation', username=username, password=password, nom_doodle=nom_doodle, mail=mail, code=code) }}" method="post">
+            <label for="username">Rentrez ici le code à 4 chiffres que vous avez reçu par mail :</label>
+            </br><input class="saisie" name="code_verif" id="code_verif" required>
+            </br></br>
+
+            <input type="submit" value="Valider">
+            </form>
+          </TD>
+        </TR>
+      </TABLE>
+    </p>
+      <TABLE width= "100%" class="sond_indiv">
+        <TR>
+          <TD class="case">
+            <form action="{{ url_for('auth.inscription_renvoi_code', username=username, password=password, nom_doodle=nom_doodle) }}" method="post">
+            <label for="username">Rentrez de nouveau votre adresse mail :</label>
+            </br><input class="saisie" name="nouv_mail" id="nouv_mail" required>
+            </br></br>
+
+            <input type="submit" value="Valider">
+            </form>
+          </TD>
+        </TR>
+      </TABLE>
+    </TD>
+  </TR>
+</TABLE>
+
+<span style="float: right; text-align: right; padding: 2rem 2rem;">
+    <a href="{{ url_for('auth.inscription_envoi_code') }}">Retour</a>
+</span>
+{% endblock %}

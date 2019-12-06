@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+
+{% block content %}
+</br>
+<TABLE width="100%" class="tableau" align="center">
+  <TR>
+    <TD class="sond1">
+        <h2>Se connecter</h2>
+    </TD>
+  </TR>
+  <TR>
+    <TD>
+      <TABLE width= "100%" class="sond_indiv">
+	  
+		<span style="float: right; text-align: right;margin: 0 0 1rem 0 ">
+			<a class="action" href="{{ url_for('auth.identifiants_oublies') }}">Nom d'utilisateur/mot de passe oublié</a>
+		</span>
+        <TR>
+          <TD class="case">
+            <form method="post">
+              <label for="username">Nom d'utilisateur :</label>
+              </br><input class="saisie" name="username" id="username" required>
+              </br></br>
+              <label for="password">Mot de passe :</label>
+              </br><input class="saisie" type="password" name="password" id="password" required>
+              </br></br>
+              <input type="submit" value="Se connecter">
+            </form>
+          </TD>
+        </TR>
+      </TABLE>
+    </TD>
+  </TR>
+</TABLE>
+{% endblock %}
