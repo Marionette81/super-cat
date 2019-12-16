@@ -5,39 +5,32 @@
 <TABLE width="100%" class="tableau" align="center">
   <TR>
     <TD class="sond1">
-        <span style="float: right; text-align: right; padding: 1rem 1rem;">
-          {% if g.user %}
-          <a class="action" href="{{ url_for('page_principale.ajouter_sondage_key') }}">Ajouter un nouveau sondage</a>
-          {% endif %}
-        </span>
           <h2>Creneaux</h2>
-		  <form action="{{ url_for('page_principale.ajouter_sondage_modif_creneaux', key=key, id=id, nom_utilisateur=nom_utilisateur, type=type, jour_entier=jour_entier, limiteVotePer=limiteVotePer, siNecessaire=siNecessaire) }}" method="post">
+		  <form action="{{ url_for('page_principale.ajouter_sondage_modif_creneaux', key=key, id=id, nom_utilisateur=nom_utilisateur, type=type, eventdate=eventdate, preferences=preferences, optionsHash=optionsHash, titre=titre, lieu=lieu, description=description, jour_entier=jour_entier, final=final, limiteVotePers=limiteVotePers, siNecessaire=siNecessaire, cal=cal) }}" method="post">
 		  <input type="submit" value="Ajouter">
-		  {% if limiteVotePer=="1" %}
-		  	<h3>Veuillez choisir au maximum {{limiteVotePer}} créneau</h3>
+		  {% if limiteVotePers=="1" %}
+		  	<h3>Veuillez choisir au maximum {{limiteVotePers}} créneau</h3>
 		  {% endif %}
           {% for creneau in creneaux %}
 		  <TR>
 		    <TD>
 			<TABLE width= "100%" class="sond_indiv">
 		      <TR>
-		        <TD align="center">
-		          <h3>{{ creneau['id']}}</h3>
+		        <TD class="grand">
+		            {% if jour_entier=="True" %}
+		            <span>Jour: {{ creneau['jourComplet'] }}</span>
+		            {% else %}
+		            <span>Debut: {{ creneau['debut'] }}</span> </br> <span>Fin : {{ creneau['fin'] }}</span>
+		            {% endif %}
 		        </TD>
 		      </TR>
 		      <TR>
-		          <TD class="caracteristiques" width="80%">
-		            
-		            {% if jour_entier=="True" %}
-		            <p class="evenement"><span class="moyen">{{ creneau['id']}} : Jour: {{ creneau['jourComplet'] }}</span>
-		            {% else %}
-		            <p class="evenement"><span class="moyen">{{ creneau['id']}} : Debut: {{ creneau['debut'] }} ; Fin : {{ creneau['fin'] }}</span>
-		            {% endif %}
+		          <TD class="checkboxes" width="80%">
 					{% if siNecessaire=="False" %}
-					<input type="checkbox" name="{{ creneau['cle'][16]}}" id="check"> <span class="moyen">Je suis disponible.</span>
+					<input class="increase" type="checkbox" name="{{ creneau['cle'][16]}}" id="check"> <span class="grand" align="right">Je suis disponible.</span>
 					{% else %}
-					<input type="checkbox" name="O{{ creneau['cle'][16]}}" id="check"> <span class="moyen">Je suis disponible.</span>
-					<input type="checkbox" name="S{{ creneau['cle'][16]}}" id="check"> <span class="moyen">Je suis disponible, si necessaire.</span>
+					<input class="increase" type="checkbox" name="O{{ creneau['cle'][16]}}" id="check"> <span class="grand" align="right">Je suis disponible.</span>
+					<input class="increase" type="checkbox" name="S{{ creneau['cle'][16]}}" id="check"> <span class="grand" align="right">Je suis disponible, si necessaire.</span>
 					{% endif %}
 		          </TD>	
 		      </TR>

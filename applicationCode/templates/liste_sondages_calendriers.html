@@ -54,17 +54,17 @@
     </TD>
   </TR>
 </TABLE>
-
 </br>
 <TABLE width="100%" class="tableau" align="center">
   <TR>
     <TD class="sond1">
-      <span style="float: right; text-align: right; padding: 1rem 1rem;">
+      <span style="float: right; text-align: right; padding: 1rem 1rem ;">
         {% if g.user %}
-        <a class="action" href="{{ url_for('page_principale.ajouter_calendrier') }}">Ajouter un nouveau calendrier</a>
+        <a class="action" href="{{ url_for('page_principale.ajouter_calendrier',) }}">Ajouter un nouveau calendrier</a>
         {% endif %}
       </span>
       <h2>VOS CALENDRIERS</h2>
+	  <h4>Veuillez d'abord ajouter vos calendriers avant de créer un sondage.</h4>
     </TD>
   </TR>
   {% for calendrier in calendriers %}
@@ -77,8 +77,11 @@
           </TD>
           <TD rowspan="2" width="40%" align="center">
 	        <form action="{{ url_for('page_principale.supprimer_calendrier', calendrier_id=calendrier['id']) }}" method="post">
-	            <input class="danger" type="submit" value = "Supprimer" onclick="return confirm('Etes-vous sur de vouloir supprimer ce sondage?');">
+	            <input class="danger" type="submit" value = "Supprimer" onclick="return confirm('Etes-vous sur de vouloir supprimer ce calendrier?');">
 	        </form>
+			<form action="{{ url_for('page_principale.modif_calendrier', calendrier_fichier=calendrier['calendrier_fichier'])  }}" method="post">
+		        <input type="submit" value = "Modifier le calendrier">
+		    </form>
           </TD>
         </TR>
         <TR>

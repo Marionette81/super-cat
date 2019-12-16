@@ -14,19 +14,18 @@
      <TABLE width= "100%" class="sond_indiv">
        <TR>
          <TD class ="case">
-          <form method="post">
-            <label for="calendrier_fichier"><span style="padding: 1rem;">Entrez le chemin complet d'accès au fichier ics </span>
-              <span class="petit">(sous Windows : C:\User\...\nom_fichier.ics ; sous Mac : /Users/.../nom_fichier.ics) :</span>
-            </label>
-            </br><input type="text" name="calendrier_fichier" id="calendrier_fichier" required>
-            </br></br>
-            <label for="calendrier_nom"><span style="padding: 1rem;">Entrez le nom du calendrier :</span></label>
-            </br><input type="text" name="calendrier_nom" id="calendrier_nom" required>
-            </br></br>
-            <label for="description"><span style="padding: 1rem;">Description du calendrier (si vous le souhaitez) :</span></label>
-            </br><input type="text" name="description" id="description">
-            </br></br>
-            <input type="submit" value="Ajouter">
+          <form method="post" enctype="multipart/form-data">
+            </br><div>
+			   <label for="file">Sélectionner le fichier à envoyer</label>
+			   <input type="file" name="calendrier_fichier" id="calendrier_fichier" required multiple>
+			   </br>
+			   <input  type="text" name="calendrier_nom" placeholder="Nom du calendrier (obligatoire)" required>
+			   </br>
+			   <input type="text" name="description" placeholder="Description (facultatif)">
+				</div>
+            <div>
+			   <button>Envoyer</button>
+			 </div>
           </form>
         </TD>
       </TR>
