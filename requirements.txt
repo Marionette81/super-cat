@@ -16,6 +16,7 @@ google-auth-httplib2==0.0.3
 google-auth-oauthlib==0.2.0
 gunicorn==19.9.0
 httplib2==0.11.3
+icalendar==4.0.3
 idna==2.7
 itsdangerous==1.1.0
 Jinja2==2.10
@@ -27,7 +28,7 @@ oauthlib==2.1.0
 optional-django==0.1.0
 pyasn1==0.4.4
 pyasn1-modules==0.2.2
-python-dateutil==2.7.5
+python-dateutil==2.7.4
 python-editor==1.0.3
 pytz==2018.7
 requests==2.19.1
