@@ -9,6 +9,7 @@ h1 {
 }
 h2 { font-family:Georgia, serif; font-size: 30px; color: #000000; margin: 1rem 0 0 0;}
 h3  { font-family: Georgia, serif; font-size: 20px; margin: 0.5rem 0 0 0 ; font-style: italic;}
+h4 {font-size: 17px; color: #cc2f2e; margin: 0.5rem 0 0 0 ;}
 
 nav {
   background:  #f9f4ea;
@@ -51,10 +52,17 @@ a { color: #e73e01; }
   border:1px solid #048F8D;
 }
 
-.sond1 {padding: 0 10rem 0 0; }
+.sond1 {padding: 0 0rem 0 0; }
 .petit{font-size: 10px;}
 .moyen {font-size: 15px;}
+.bordure { padding : 1rem;}
+.grand {padding :1rem; font-size: 16px;}
 .caracteristiques{padding-left: 1.8rem;}
+.checkboxes{padding-left: 27rem;}
+.increase {
+    width:16px;
+    height:16px;
+}
 .fond {
   padding-left: 0.8rem;
   background : #baffc9;
