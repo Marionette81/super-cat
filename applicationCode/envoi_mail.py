@@ -1,12 +1,15 @@
-## Importation des modules
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+from email.mime.base import MIMEBase
+from email import encoders
 
 import re
 
 import random
 import string
+
+
 
 def verif_mail(ch):
     """verifie la syntaxe d'une adresse mail donnée sous forme de chaine"""
@@ -31,7 +34,7 @@ def code_verification(mail):
         j=random.randint(0,9)
         code += str (j)
     ##  Spécification de l'expéditeur
-    Fromadd = "achille.brad.pitt@gmail.com"
+    Fromadd = "syncplancal.ne.pas.repondre@gmail.com"
     ##  Spécification des destinataires
     Toadd = mail
     ## Spécification des destinataires en copie carbone (cas de plusieurs destinataires)
@@ -58,7 +61,7 @@ def code_verification(mail):
      
     serveur = smtplib.SMTP('smtp.gmail.com', 587)    ## Connexion au serveur sortant (en précisant son nom et son port)
     serveur.starttls()    ## Spécification de la sécurisation
-    serveur.login(Fromadd, "syncplancal")    ## Authentification
+    serveur.login(Fromadd, "MarionJudith")    ## Authentification
     texte= message.as_string().encode('utf-8')    ## Conversion de l'objet "message" en chaine de caractère et encodage en UTF-8
     Toadds = [Toadd] + cc + [bcc]    ## Rassemblement des destinataires
     serveur.sendmail(Fromadd, Toadds, texte)    ## Envoi du mail
@@ -83,7 +86,7 @@ def getPassword(length):
 def mot_de_passe_oublie(mail,nom_utilisateur):
     mdp = getPassword(8)
     ##  Spécification de l'expéditeur
-    Fromadd = "achille.brad.pitt@gmail.com"
+    Fromadd = "syncplancal.ne.pas.repondre@gmail.com"
     ##  Spécification des destinataires
     Toadd = mail
     ## Spécification des destinataires en copie carbone (cas de plusieurs destinataires)
@@ -110,12 +113,55 @@ def mot_de_passe_oublie(mail,nom_utilisateur):
      
     serveur = smtplib.SMTP('smtp.gmail.com', 587)    ## Connexion au serveur sortant (en précisant son nom et son port)
     serveur.starttls()    ## Spécification de la sécurisation
-    serveur.login(Fromadd, "syncplancal")    ## Authentification
+    serveur.login(Fromadd, "MarionJudith")    ## Authentification
     texte= message.as_string().encode('utf-8')    ## Conversion de l'objet "message" en chaine de caractère et encodage en UTF-8
     Toadds = [Toadd] + cc + [bcc]    ## Rassemblement des destinataires
     serveur.sendmail(Fromadd, Toadds, texte)    ## Envoi du mail
     serveur.quit()    ## Déconnexion du serveur
     return mdp
 
+
+def envoyer_calendrier(mail,fichier):
+    ##  Spécification de l'expéditeur
+    Fromadd = "syncplancal.ne.pas.repondre@gmail.com"
+    ##  Spécification des destinataires
+    Toadd = mail
+    ## Spécification des destinataires en copie carbone (cas de plusieurs destinataires)
+    cc = []
+    ## Spécification du destinataire en copie cachée (en copie cachée)
+    #bcc = "judithla30@gmail.com"
+    bcc = ""
+    ## Création de l'objet "message"
+    message = MIMEMultipart()
+    ## Spécification de l'expéditeur
+    message['From'] = Fromadd
+    ## Attache du destinataire à l'objet "message"
+    message['To'] = Toadd
+    ## Attache des destinataires en copie carbone à l'objet "message" (cas de plusieurs destinataires)
+    message['CC'] = ",".join(cc)
+    ## Attache du destinataire en copie cachée à l'objet "message"
+    message['BCC'] = bcc
+    ## Spécification de l'objet de votre mail
+    message['Subject'] = "Calendrier mis à jour"
+    ## Message à envoyer
+    msg = "Voici votre fichier : "
+    ## Attache du message à l'objet "message", et encodage en UTF-8
+    message.attach(MIMEText(msg.encode('utf-8'), 'plain', 'utf-8'))
+    
+    nom_fichier = fichier    ## Spécification du nom de la pièce jointe
+    piece = open(fichier, "rb")    ## Ouverture du fichier
+    part = MIMEBase('application', 'octet-stream')    ## Encodage de la pièce jointe en Base64
+    part.set_payload((piece).read())
+    encoders.encode_base64(part)
+    part.add_header('Content-Disposition', "piece; filename= %s" % nom_fichier)
+    message.attach(part)    ## Attache de la pièce jointe à l'objet "message" 
+     
+    serveur = smtplib.SMTP('smtp.gmail.com', 587)    ## Connexion au serveur sortant (en précisant son nom et son port)
+    serveur.starttls()    ## Spécification de la sécurisation
+    serveur.login(Fromadd, "MarionJudith")    ## Authentification
+    texte= message.as_string().encode('utf-8')    ## Conversion de l'objet "message" en chaine de caractère et encodage en UTF-8
+    Toadds = [Toadd] + cc + [bcc]    ## Rassemblement des destinataires
+    serveur.sendmail(Fromadd, Toadds, texte)    ## Envoi du mail
+    serveur.quit()    ## Déconnexion du serveur
 
 

@@ -2,12 +2,12 @@
 #C’est à partir de ce fichier que tout est initialisé et que le lancement de l’application est rendu possible.
 
 from flask import Flask 
-import db 
-import auth 
-import page_principale 
-##from . import db #Windows
-##from . import auth #Windows
-##from . import page_principale #Windows
+##import db 
+##import auth 
+##import page_principale 
+from . import db #Windows
+from . import auth #Windows
+from . import page_principale #Windows
 import os
 
 

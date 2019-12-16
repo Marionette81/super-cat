@@ -15,9 +15,9 @@ from werkzeug.security import check_password_hash, generate_password_hash
 
 from applicationCode.db import get_db #Windows
 from . import envoi_mail #Windows
-#import db #MAC
-#from db import get_db #MAC
-#import envoi_mail # MAC
+##import db #MAC
+##from db import get_db #MAC
+##import envoi_mail # MAC
 import os
 os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 os.environ['DEBUG'] = '1'
@@ -122,7 +122,7 @@ def inscription_finalisation(username, password, nom_doodle, mail, code):
                 (username, generate_password_hash(password), nom_doodle, mail)
                 )
             db.commit()
-            return redirect(url_for('auth.login'))
+            return redirect(url_for('page_principale'))
     return render_template('verification_mail_inscription.html', username=username, password=password, nom_doodle=nom_doodle, mail=mail, code=code)
 
     

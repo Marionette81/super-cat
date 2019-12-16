@@ -4,23 +4,31 @@ from flask import (
 from werkzeug.exceptions import abort
 from werkzeug.security import check_password_hash, generate_password_hash
 
+
+import icalendar
+from icalendar import *
+import requests
+
 from applicationCode.auth import login_required #Windows
 from applicationCode.db import get_db #Windows
 from . import with_doodle #Windows
 from . import envoi_mail #Windows
-#import auth # MAC
-#from auth import login_required # MAC
-#import db #MAC
-#from db import get_db #MAC
-#import with_doodle #MAC
-#import envoi_mail # MAC
-import datetime
-from datetime import *
+##import auth #MAC
+##from auth import login_required #MAC
+##import db #MAC
+##from db import get_db #MAC
+##import with_doodle #MAC
+##import envoi_mail #MAC
 
-# Variable globale contenant toutes les informations du sondage en cours
-sondag = []
-# Variable globale contenant la liste des calendriers pour le sondage en cours
-selec_calendriers = []
+import datetime
+#from datetime import *
+import urllib.request
+
+
+### Variable globale contenant toutes les informations du sondage en cours
+##sondag = []
+### Variable globale contenant la liste des calendriers pour le sondage en cours
+##selec_calendriers = []
 
 bp = Blueprint('page_principale', __name__)
 
@@ -28,6 +36,8 @@ bp = Blueprint('page_principale', __name__)
 @bp.route('/')
 @login_required
 def liste_sondages_calendriers():
+##    global selec_calendriers
+##    global sondag
     db = get_db()
     #On récupère les sondages de l'utilisateur dans la base de données
     sondages = db.execute(
@@ -50,6 +60,8 @@ def liste_sondages_calendriers():
 def ajouter_sondage_key():
     error=None
     existanceCalendrier = False
+##    global selec_calendriers
+##    global sondag
     db = get_db()
     if request.method == 'POST':
         # On récupère la clé du sondage
@@ -57,7 +69,7 @@ def ajouter_sondage_key():
 
         if not key:
             error = 'Veuillez entrer la clé du sondage.'
-        #On vérifie que l'utilisateur n'a  pas déjà ajouté ce sondage
+        # On vérifie que l'utilisateur n'a  pas déjà ajouté ce sondage
         elif db.execute( 
             'SELECT sondage_key FROM sondage_user WHERE sondage_key = ? AND user_id = ?', (key, g.user['id'])
         ).fetchone() is not None:
@@ -85,50 +97,65 @@ def ajouter_sondage_key():
 @bp.route('/<string:key>/<string:nom_utilisateur>/selec_creneaux', methods=('GET','POST',))
 @login_required
 def ajouter_sondage_selec_creneaux(key,nom_utilisateur):
+##    global selec_calendriers
+##    global sondag
+    error = None
     db = get_db()
+    selec_calendriers = []
+    # On récupère la liste des calendriers de l'utilisateur
+    liste_calendriers = db.execute(
+        'SELECT * FROM calendrier JOIN (SELECT calendrier_id FROM calendrier_user WHERE user_id = ?) cal ON calendrier.id=cal.calendrier_id',(g.user['id'],)
+        ).fetchall()
     # On récupère l'adresse du fichier correspondant au calendrier demandé
     if request.method == 'POST':
         cal_ids= request.form
+        if len(cal_ids)==0:
+            error = 'Veuillez sélectionner un ou plusieurs calendriers.'
+            flash(error)
+            return render_template('liste_calendriers.html', liste_calendriers=liste_calendriers, key=key, nom_utilisateur=nom_utilisateur)
+        else:
+            # On récupère le nom des calendriers sélectionnés
+            for cal_id in cal_ids:
+                cal = db.execute(
+                        'SELECT calendrier_nom FROM calendrier WHERE id = ?', (cal_id,)
+                        ).fetchone()['calendrier_nom']
+                selec_calendriers.append(cal)
+            # On récupère les créneaux du sondage où l'utilisateur est libre et on les ajoute à la base de données
+            sond = with_doodle.recup_creneau(key,nom_utilisateur,liste_calendriers)
 
-        # On récupère le nom des calendriers sélectionnés
-        for cal_id in cal_ids:
-            cal = db.execute(
-                    'SELECT calendrier_nom FROM calendrier WHERE id = ?', (cal_id,)
-                    ).fetchone()['calendrier_nom']
-            selec_calendriers.append(cal)
-        #print("CALENDRIERS : ",selec_calendriers)
-        # On récupère la liste des calendriers de l'utilisateur
-        liste_calendriers = db.execute(
-            'SELECT * FROM calendrier JOIN (SELECT calendrier_id FROM calendrier_user WHERE user_id = ?) cal ON calendrier.id=cal.calendrier_id',(g.user['id'],)
-            ).fetchall()
-
-        # On récupère les créneaux du sondage où l'utilisateur est libre et on les ajoute à la base de données
-        sond = with_doodle.recup_creneau(key,nom_utilisateur,liste_calendriers)
-
-        # On complète la liste sondag
-        sondag.append(sond[0])
-        sondag.append(sond[1])
-        sondag.append(sond[2])
-        sondag.append(sond[3])
-        sondag.append(sond[4])
-        sondag.append(sond[5])
-        sondag.append(sond[6])
-        sondag.append(sond[7])
-        sondag.append(sond[8])
-        sondag.append(sond[9])
-        creneaux = db.execute(
-            'SELECT * FROM creneau JOIN creneau_sondage ON id=creneau_id  WHERE sondage_key = ? AND user_id = ?',(key,g.user['id'])
-            ).fetchall()
-        return render_template('liste_creneaux.html', creneaux=creneaux,key=key,id=g.user['id'],nom_utilisateur=nom_utilisateur,
-                           type="ajout",jour_entier=str(sondag[6]),limiteVotePer=str(sond[8]),siNecessaire=str(sond[9]))
-    return render_template('liste_calendriers.html', liste_calendriers=liste_calendriers, key=key, nom_utilisateur=nom_utilisateur)
- 
+            eventdate = str(sond[0])
+            preferences = str(sond[1])
+            optionsHash = sond[2]
+            titre = sond[3]
+            lieu = sond[4]
+            description = sond[5]
+            jour_entier = str(sond[6])
+            final = str(sond[7])
+            limiteVotePers = str(sond[8])
+            siNecessaire = str(sond[9])
+            
+            creneaux = db.execute(
+                'SELECT * FROM creneau JOIN creneau_sondage ON id=creneau_id  WHERE sondage_key = ? AND user_id = ?',(key,g.user['id'])
+                ).fetchall()
+            
+            return render_template('liste_creneaux.html', creneaux=creneaux,key=key,id=g.user['id'],nom_utilisateur=nom_utilisateur,
+                               type="ajout",eventdate=eventdate,preferences=preferences,optionsHash=optionsHash,titre=titre,
+                                lieu=lieu,description=description,jour_entier=jour_entier,final=final,limiteVotePers=limiteVotePers,
+                                siNecessaire=siNecessaire,cal=str(selec_calendriers))
+        return render_template('liste_calendriers.html', liste_calendriers=liste_calendriers, key=key, nom_utilisateur=nom_utilisateur)
+     
 
 # Permet de ne conserver que les créneaux choisis par l'utilisateur
-@bp.route('/<string:key>/<int:id>/<string:nom_utilisateur>/<string:type>/<string:jour_entier>/<string:limiteVotePer>/<string:siNecessaire>/modif_creneaux/', methods=('GET','POST',))
+@bp.route('/<string:key>/<int:id>/<string:nom_utilisateur>/<string:type>/<string:eventdate>/<string:preferences>/<string:optionsHash>/<string:titre>/<string:lieu>/<string:description>/<string:jour_entier>/<string:final>/<string:limiteVotePers>/<string:siNecessaire>/<string:cal>/modif_creneaux/', methods=('GET','POST',))
 @login_required
-def ajouter_sondage_modif_creneaux(key,id,nom_utilisateur,type,jour_entier,limiteVotePer,siNecessaire):
-    preferences= sondag[1]
+def ajouter_sondage_modif_creneaux(key,id,nom_utilisateur,type,eventdate,preferences,optionsHash,titre,lieu,description,jour_entier,final,limiteVotePers,siNecessaire,cal):
+##    global selec_calendriers
+##    global sondag
+##    print("Deuxième sondage")
+##    print(sondag)
+    selec_calendriers = eval(cal)
+    preferences = eval(preferences)
+    siNecessaire = eval(siNecessaire)
     j=0
     n=0
     # On compte combien de créneaux ont été préselectionnés
@@ -149,14 +176,16 @@ def ajouter_sondage_modif_creneaux(key,id,nom_utilisateur,type,jour_entier,limit
         # On récupère les indices (dans la liste preferences) des créneaux que l'utilisateur a choisi
         val1= request.form
         print(len(val1))
-        if siNecessaire=='False' and len(val1)>sondag[8]:
+        if not siNecessaire and len(val1)>eval(limiteVotePers):
             error = 'Vous avez voté pour trop de créneaux'
             flash(error)
-            return render_template('liste_creneaux.html', creneaux=creneaux,key=key,id=id,nom_utilisateur=nom_utilisateur,
-                                   type=type,jour_entier=jour_entier,limiteVotePer=sondag[8],siNecessaire=siNecessaire)
+            return render_template('liste_creneaux.html', creneaux=creneaux,key=key,id=g.user['id'],nom_utilisateur=nom_utilisateur,
+                           type="ajout",eventdate=eventdate,preferences=str(preferences),optionsHash=optionsHash,titre=titre,
+                            lieu=lieu,description=description,jour_entier=jour_entier,final=final,limiteVotePers=limiteVotePers,
+                            siNecessaire=str(siNecessaire),cal=str(selec_calendriers))
         # On parcourt la liste des indices
         for k in val1:
-            if siNecessaire == 'False':
+            if not siNecessaire:
                 l[int(k)]=1
             # Si le sondage possède l'option 'si Necessaire' l'utilisateur a deux checkbox par créneau
             else:
@@ -168,15 +197,17 @@ def ajouter_sondage_modif_creneaux(key,id,nom_utilisateur,type,jour_entier,limit
                     if l[int(k[1])]==2:
                         error = 'Vous avez voté deux fois pour le même créneau'
                         flash(error)
-                        return render_template('liste_creneaux.html', creneaux=creneaux,key=key,id=id,nom_utilisateur=nom_utilisateur,
-                                   type=type,jour_entier=jour_entier,limiteVotePer=sondag[8],siNecessaire=siNecessaire)
+                        return render_template('liste_creneaux.html', creneaux=creneaux,key=key,id=g.user['id'],nom_utilisateur=nom_utilisateur,
+                           type="ajout",eventdate=eventdate,preferences=str(preferences),optionsHash=optionsHash,titre=titre,
+                            lieu=lieu,description=description,jour_entier=jour_entier,final=final,limiteVotePers=limiteVotePers,
+                            siNecessaire=str(siNecessaire),cal=str(selec_calendriers))
                     l[int(k[1])]=1
                     
     # On récupère la liste de créneaux préselectionnés
-    eventdate=sondag[0].copy()
+    eventdate=eval(eventdate)
     
     # Si le sondage n'est pas sur un jour entier
-    if not (sondag[6]): 
+    if not (eval(jour_entier)): 
         for i in range (len(l)-1,-1,-1):
             if preferences[i]==1 or preferences[i]==2:
                 j=j+1
@@ -194,8 +225,8 @@ def ajouter_sondage_modif_creneaux(key,id,nom_utilisateur,type,jour_entier,limit
                     eventdate.pop((n-j))
                     
     # On convertit au bon format pour remplir le sondage Doodle puis on le remplit
-    eventdate2 = with_doodle.conversion(eventdate,sondag[3],sondag[4],sondag[5], sondag[6]) 
-    with_doodle.remplissage_doodle(l,sondag[2],key,nom_utilisateur,participant_key)
+    eventdate2 = with_doodle.conversion(eventdate,titre,lieu,description,eval(jour_entier)) 
+    with_doodle.remplissage_doodle(l,optionsHash,key,nom_utilisateur,participant_key)
     
     creneau_reserve=""
     # On remplit le(s) calendrier(s) avec les créneaux:
@@ -203,16 +234,20 @@ def ajouter_sondage_modif_creneaux(key,id,nom_utilisateur,type,jour_entier,limit
         calendrier = (db.execute(
                                 'SELECT calendrier_fichier FROM calendrier WHERE calendrier_nom = ?', (cal_nom,)
                                 ).fetchone())['calendrier_fichier']
-        creneau_reserve=str(with_doodle.reserve_creneaux(eventdate2,sondag[6],key,sondag[7],calendrier))
+        creneau_reserve=str(with_doodle.reserve_creneaux(eventdate2,eval(jour_entier),key,jour_entier,calendrier))
+        mail = (db.execute(
+                            'SELECT mail FROM user WHERE id = ?', (g.user['id'],)
+                            ).fetchone())['mail']
+        envoi_mail.envoyer_calendrier(mail,calendrier)
         
-    date=datetime.now().date()
+    date=datetime.datetime.now().date()
     
     # S'il s'agit d'ajouter un sondage, on l'ajoute dans la base de données
     if (type=="ajout"):
         db.execute(
             'INSERT INTO sondage (key, titre, lieu, description,liste_options,date_maj,date_entree,est_final)'
             ' VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-            (key, sondag[3], sondag[4], sondag[5], creneau_reserve, date, date, sondag[7])
+            (key, titre, lieu, description, creneau_reserve, date, date, final)
         )
         db.execute(
             'INSERT INTO sondage_user (sondage_key, user_id)'
@@ -231,11 +266,11 @@ def ajouter_sondage_modif_creneaux(key,id,nom_utilisateur,type,jour_entier,limit
         db.execute(
                 'UPDATE sondage SET liste_options = ?, date_maj = ?, est_final = ?'
                 ' WHERE key = ?',
-                (creneau_reserve, date, sondag[7], key)
+                (creneau_reserve, date, final, key)
             )   
     db.commit()
-    sondag.clear()
-    selec_calendriers.clear()
+##    sondag.clear()
+##    selec_calendriers.clear()
     return redirect(url_for('page_principale'))
 
 
@@ -243,11 +278,13 @@ def ajouter_sondage_modif_creneaux(key,id,nom_utilisateur,type,jour_entier,limit
 @bp.route('/<string:key>/<int:id>/<string:nom_utilisateur>/mise_a_jour_sondage', methods=('POST',))
 @login_required
 def mise_a_jour_sondage(key,id,nom_utilisateur):
-
     # On met la même clé (au hasard)
     participant_key = "et5qinsv"
-    sondag.clear()
+##    global sondag
+##    global selec_calendriers
+##    sondag.clear()
     db = get_db()
+    selec_calendriers = []
 
     # On récupère les créneaux du sondage
     eventdate = (db.execute(
@@ -279,29 +316,32 @@ def mise_a_jour_sondage(key,id,nom_utilisateur):
     # On récupère les créneaux où l'utilisateur est libre
     sond=with_doodle.recup_creneau(key, nom_utilisateur, liste_calendriers)
 
-    # On complète la liste sondag
-    sondag.append(sond[0])
-    sondag.append(sond[1])
-    sondag.append(sond[2])
-    sondag.append(sond[3])
-    sondag.append(sond[4])
-    sondag.append(sond[5])
-    sondag.append(sond[6])
-    sondag.append(sond[7])
-    sondag.append(sond[8])
-    sondag.append(sond[9])  
+    eventdate = str(sond[0])
+    preferences = str(sond[1])
+    optionsHash = sond[2]
+    titre = sond[3]
+    lieu = sond[4]
+    description = sond[5]
+    jour_entier = str(sond[6])
+    final = str(sond[7])
+    limiteVotePers = str(sond[8])
+    siNecessaire = str(sond[9]) 
     creneaux = db.execute(
                     'SELECT * FROM creneau JOIN creneau_sondage ON id=creneau_id  WHERE sondage_key = ? AND user_id = ?', (key,g.user['id'])
                     ).fetchall()
-    return render_template('liste_creneaux.html', creneaux=creneaux,key=key,id=id,nom_utilisateur=nom_utilisateur,
-                           type="maj",jour_entier=str(sondag[6]),limiteVotePer=sondag[8],siNecessaire=str(sond[9]))
+    return render_template('liste_creneaux.html', creneaux=creneaux,key=key,id=g.user['id'],nom_utilisateur=nom_utilisateur,type="maj",eventdate=eventdate,
+                           preferences=str(preferences),optionsHash=optionsHash,titre=titre,lieu=lieu,description=description,jour_entier=jour_entier,final=final,
+                           limiteVotePers=limiteVotePers,siNecessaire=str(siNecessaire),cal=str(selec_calendriers))
 
 
 # L'utilisateur peut supprimer ses sondages s'il le souhaite
 @bp.route('/<string:key>/<string:nom_utilisateur>/supprimer_sondage', methods=('POST',))
 @login_required
 def supprimer_sondage(key, nom_utilisateur):
+##    global selec_calendriers
+##    global sondag
     db = get_db()
+    
     # On récupère les créneaux du sondage
     eventdate = (db.execute(
                             'SELECT liste_options FROM sondage WHERE key = ?', (key,)
@@ -330,70 +370,89 @@ def supprimer_sondage(key, nom_utilisateur):
     
 
 # L'utilisateur peut choisir d'ajouter un nouveau calendrier
-@bp.route('/liste_sondages_calendriers', methods=('GET', 'POST'))
+@bp.route('/liste_sondages_calendrier', methods=('GET', 'POST',))
 @login_required
 def ajouter_calendrier():
+##    global selec_calendriers
+##    global sondag
     error=None
     db = get_db()
     if request.method == 'POST':
         # On récupère l'adresse du fichier contenant le calendrier
-        fichier = request.form['calendrier_fichier']
+        fichier = request.files['calendrier_fichier']
 
         # On vérifie que l'utilisateur a bien rentré l'adresse et qu'il n'a pas déjà ajouté ce calendrier
         if not fichier:
             error = 'Veuillez entrer le fichier.'
+        
+        # On récupère le nom du calendrier
+        nom = request.form['calendrier_nom']
+        # On vérifie que l'utilisateur a bien rentré le nom et qu'il n'a pas déjà nommé un de ses calendriers de la même façon
+        if not nom:
+            error = 'Veuillez entrer un nom pour le calendrier.'
         elif db.execute(
-            'SELECT calendrier_fichier FROM calendrier JOIN (SELECT * FROM calendrier_user WHERE user_id = ?) cal ON calendrier.id=cal.calendrier_id WHERE calendrier_fichier = ?',
-            (g.user['id'],fichier,)).fetchone() is not None:
-            error = 'Le calendrier {} existe déjà.'.format(fichier)
-        try:
-            with open(fichier): pass
-        except IOError:
-            error = "Ce fichier n'existe pas."
-            
+            'SELECT calendrier_nom FROM calendrier JOIN (SELECT * FROM calendrier_user WHERE user_id = ?) cal ON calendrier.id=cal.calendrier_id WHERE calendrier_nom = ?',
+            (g.user['id'],nom,)).fetchone() is not None:
+            error = 'Ce nom de calendrier : "{}" existe déjà.'.format(nom)
+
         if error is not None:
             flash(error)
         else:
-            # On récupère le nom du calendrier
-            nom = request.form['calendrier_nom']
-            # On vérifie que l'utilisateur a bien rentré le nom et qu'il n'a pas déjà nommé un de ses calendriers de la même façon
-            if not nom:
-                error = 'Veuillez entrer un nom pour le calendrier.'
-            elif db.execute(
-                'SELECT calendrier_nom FROM calendrier JOIN (SELECT * FROM calendrier_user WHERE user_id = ?) cal ON calendrier.id=cal.calendrier_id WHERE calendrier_nom = ?',
-                (g.user['id'],nom,)).fetchone() is not None:
-                error = 'Ce nom de calendrier : "{}" existe déjà.'.format(nom)
-
-            if error is not None:
-                flash(error)
-            else:
-                # On récupère la possible description qu'il a donné à son calendrier
-                descr = request.form['description']
-
-                # On met à jour la base de données en complétant les tables calendrier et calendrier_user
-                db.execute(
-                    'INSERT INTO calendrier (calendrier_nom,calendrier_fichier,description)'
-                    ' VALUES (?, ?, ?)',
-                    (nom,fichier,descr)
-                )
-                id_calendrier= (db.execute(
-                                    'SELECT id FROM calendrier WHERE calendrier_fichier = ?',
-                                    (fichier,)).fetchone()['id'])
-                db.execute(
-                    'INSERT INTO calendrier_user (calendrier_id, user_id)'
-                    ' VALUES (?, ?)',
-                    (id_calendrier,g.user['id'])
-                )
-                db.commit()
-                return redirect(url_for('page_principale'))
+            # On récupère la possible description qu'il a donné à son calendrier
+            descr = request.form['description']
+            fichierTemp= str(g.user['id'])+'_'+nom+'.ics'
+            fichier.save(fichierTemp, 15000)
+##            f=open(fichierTemp,'r')
+##            fcal=Calendar.from_ical(f.read())
+##            print(len(fcal.subcomponents))
+            # On met à jour la base de données en complétant les tables calendrier et calendrier_user
+            db.execute(
+                'INSERT INTO calendrier (calendrier_nom,calendrier_fichier,description)'
+                ' VALUES (?, ?,?)',
+                (nom,fichierTemp, descr)
+            )
+            id_calendrier= (db.execute(
+                                'SELECT id FROM calendrier WHERE calendrier_fichier = ?',
+                                (fichierTemp,)).fetchone()['id'])
+            db.execute(
+                'INSERT INTO calendrier_user (calendrier_id, user_id)'
+                ' VALUES (?, ?)',
+                (id_calendrier,g.user['id'])
+            )
+            db.commit()
+            return redirect(url_for('page_principale'))
 
     return render_template('ajouter_calendrier.html')
 
-
+# L'utilisateur peut choisir de modifier le fichier d'un calendrier
+@bp.route('/<string:calendrier_fichier>/modif_calendrier', methods=('GET', 'POST',))
+@login_required
+def modif_calendrier(calendrier_fichier):
+    error=None
+    db = get_db()
+    try :
+        fichier = request.files['calendrier_fichier']
+        # On vérifie que l'utilisateur a bien rentré l'adresse et qu'il n'a pas déjà ajouté ce calendrier
+        if not fichier:
+            error = 'Veuillez entrer le fichier.'
+        if error is not None:
+            flash(error)
+        else:
+            # On récupère la possible description qu'il a donné à son calendrier
+            #descr = request.form['description']
+            
+            fichierTemp= calendrier_fichier
+            fichier.save(fichierTemp, 15000)
+            return redirect(url_for('page_principale'))
+    except : 
+        return render_template('modif_calendrier.html',calendrier_fichier=calendrier_fichier)
+    
 # L'utilisateur peut supprimer ses calendriers s'il le souhaite
 @bp.route('/<int:calendrier_id>/supprimer_calendrier', methods=('POST',))
 @login_required
 def supprimer_calendrier(calendrier_id):
+##    global selec_calendriers
+##    global sondag
     db = get_db()
     db.execute(
         'DELETE FROM calendrier WHERE id = ?',(calendrier_id,)
@@ -408,6 +467,8 @@ def supprimer_calendrier(calendrier_id):
 @bp.route('/parametres')
 @login_required
 def parametres():
+##    global selec_calendriers
+##    global sondag
     db = get_db()
     return render_template('parametres.html', username=g.user['username'], nom_doodle=g.user['nom_doodle'], mail=g.user['mail'])
     
@@ -415,6 +476,8 @@ def parametres():
 @bp.route('/<string:username>/<string:nom_doodle>/<string:mail>/modif_nom_doodle', methods=('GET', 'POST'))
 @login_required
 def modif_nom_doodle(username, nom_doodle, mail):
+##    global selec_calendriers
+##    global sondag
     error=None
     db = get_db()
     if request.method == 'POST':
@@ -439,13 +502,15 @@ def modif_nom_doodle(username, nom_doodle, mail):
 @bp.route('/<string:username>/<string:nom_doodle>/<string:mail>/modif_mot_de_passe', methods=('GET', 'POST'))
 @login_required
 def modif_mot_de_passe(username, nom_doodle, mail):
+##    global selec_calendriers
+##    global sondag
     error=None
     db = get_db()
     if request.method == 'POST':
         ancien_mdp = request.form['mot_de_passe_0']
         mdp = generate_password_hash(request.form['mot_de_passe_1'])
         mdp_bis = request.form['mot_de_passe_2']
-        print(check_password_hash(mdp, mdp_bis))
+        ##print(check_password_hash(mdp, mdp_bis))
 
         if not check_password_hash(g.user['password'], ancien_mdp):
             error = 'Mot de passe incorrect.'
@@ -473,6 +538,8 @@ def modif_mot_de_passe(username, nom_doodle, mail):
 @bp.route('/<string:username>/<string:nom_doodle>/<string:mail>/modif_mail', methods=('GET', 'POST'))
 @login_required
 def modif_mail(username, nom_doodle, mail):
+##    global selec_calendriers
+##    global sondag
     error=None
     db = get_db()
     if request.method == 'POST':
@@ -482,6 +549,10 @@ def modif_mail(username, nom_doodle, mail):
             error = 'Veuillez entrer une adresse mail.'
         elif not envoi_mail.verif_mail(mail):
             error = 'Veuillez entrer une adresse mail valide.'
+        elif db.execute(
+                'SELECT mail FROM user WHERE mail = ?',
+                (mail,)).fetchone() is not None:
+                error = 'Cette adresse mail : "{}" est déjà associée à un autre compte.'.format(mail)
 
         if error is not None:
             flash(error)
@@ -494,6 +565,8 @@ def modif_mail(username, nom_doodle, mail):
 @bp.route('/<string:username>/<string:nom_doodle>/<string:mail>/<string:code>/verification_code', methods=('GET', 'POST'))
 @login_required
 def verification_code(username, nom_doodle, mail, code):
+##    global selec_calendriers
+##    global sondag
     db = get_db()
     error = None
     # On récupère le code de vérification

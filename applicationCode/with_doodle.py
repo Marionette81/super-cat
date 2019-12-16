@@ -12,9 +12,9 @@ import flask
 
 from . import with_ics #Windows
 from applicationCode.db import get_db #Windows
-#import with_ics #MAC
-#import db #MAC
-#from db import get_db #MAC
+##import with_ics #MAC
+##import db #MAC
+##from db import get_db #MAC
 import icalendar
 from icalendar import *
 
@@ -166,8 +166,8 @@ def recup_creneau(key, nom_utilisateur, liste_calendriers):
 
                 # On ajoute l'heure de début à la liste des options
                 # L'heure est ajoutée au format : datetime.datetime(yyyy, mm, dd, hh, mm, ss)
-                #optionDebut = a + datetime.timedelta(milliseconds = int(secondesEnPlusDebut)+3600000)
-                optionDebut = a + datetime.timedelta(milliseconds = int(secondesEnPlusDebut))
+                optionDebut = a + datetime.timedelta(milliseconds = int(secondesEnPlusDebut)+3600000)
+                #optionDebut = a + datetime.timedelta(milliseconds = int(secondesEnPlusDebut))
                 liste_options.append(optionDebut)
 
                 # Au début, on met par défaut que la personne est libre à tous les créneaux finaux
@@ -183,8 +183,8 @@ def recup_creneau(key, nom_utilisateur, liste_calendriers):
                     secondesEnPlusFin = int(str(temps["end"])[0:len(str(temps["end"]))])
 
                     # On l'ajoute à la liste des options
-                    #optionFin = a + datetime.timedelta(milliseconds = int(secondesEnPlusFin)+3600000)
-                    optionFin = a + datetime.timedelta(milliseconds = int(secondesEnPlusFin))
+                    optionFin = a + datetime.timedelta(milliseconds = int(secondesEnPlusFin)+3600000)
+                    #optionFin = a + datetime.timedelta(milliseconds = int(secondesEnPlusFin))
                     liste_options.append(optionFin)
             except:
                 # Si la date n'est pas finale, on ajoute 0 aux préférences, et nous n'avons donc pas à nous soucier des dates non-finales
@@ -208,7 +208,7 @@ def recup_creneau(key, nom_utilisateur, liste_calendriers):
                 place.append(re)
 
                 # On ajoute l'heure de début à la liste des options
-                optionDebut = a + datetime.timedelta(milliseconds = int(secondesEnPlusDebut))
+                optionDebut = a + datetime.timedelta(milliseconds = int(secondesEnPlusDebut)+3600000)
                 liste_options.append(optionDebut)
 
                 # Si le sondage n'est pas sur le jour entier, on récupère l'horaire de fin
@@ -217,7 +217,7 @@ def recup_creneau(key, nom_utilisateur, liste_calendriers):
                     secondesEnPlusFin = int(str(temps["end"])[0:len(str(temps["end"]))])
 
                     # On ajoute les deux à la liste des options
-                    optionFin = a + datetime.timedelta(milliseconds = int(secondesEnPlusFin))
+                    optionFin = a + datetime.timedelta(milliseconds = int(secondesEnPlusFin)+3600000)
                     liste_options.append(optionFin)
             re+=1
 

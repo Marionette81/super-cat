@@ -23,7 +23,7 @@ CREATE TABLE sondage (
   date_maj DATETIME,
   lieu TEXT,
   description TEXT,
-  liste_options JSON NOT NULL,
+  liste_options JSON,
   est_final BOOLEAN
 );
 
@@ -63,11 +63,13 @@ CREATE TABLE creneau_sondage (
   CONSTRAINT PK_creneau_sondage PRIMARY KEY (creneau_id,sondage_key,user_id)
 );
 
+
+
 CREATE TABLE calendrier (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
 	calendrier_nom TEXT UNIQUE NOT NULL,
 	calendrier_fichier TEXT UNIQUE NOT NULL,
-  description TEXT 
+	description TEXT 
 );
 
 CREATE TABLE calendrier_user(
@@ -75,5 +77,5 @@ CREATE TABLE calendrier_user(
 	user_id INTEGER NOT NULL,
 	FOREIGN KEY (calendrier_id) REFERENCES calendrier(id),
 	FOREIGN KEY (user_id) REFERENCES user (id),
-  CONSTRAINT PK_calendrier_user PRIMARY KEY (calendrier_id,user_id)
+	CONSTRAINT PK_calendrier_user PRIMARY KEY (calendrier_id,user_id)
 );
